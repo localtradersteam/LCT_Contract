@@ -12,6 +12,7 @@ contract LCTExchange is Ownable {
 
     mapping(address => uint256) public stakingBalance;
     mapping(address => uint256) public stakes;
+    mapping(address => S_liquidity[]) public liqudityProviders;
 
     Stakeholder[] public stakeholders;
 
@@ -21,6 +22,11 @@ contract LCTExchange is Ownable {
         uint32 timeStaked;
         address user;
         bool claimable;
+    }
+
+    struct S_liquidity {
+        uint256 amount;
+        uint256 sinse;
     }
 
     struct Stakeholder {
@@ -124,11 +130,11 @@ contract LCTExchange is Ownable {
         if (index == 0) {
             index = _addStakeholder(msg.sender);
         }
-        stakingBalance[msg.sender] += _amount;
 
         bool sent = token.transferFrom(msg.sender, address(this), _amount);
         require(sent, "Failed to transfer tokens from user to vendor");
 
+        stakingBalance[msg.sender] += _amount;
         exchangeStakedTokens += _amount;
 
         stakeholders[index].address_stakes.push(
@@ -255,5 +261,23 @@ contract LCTExchange is Ownable {
             index,
             current_stake.since
         );
+    }
+
+    function handleInvestInvestor(uint _value, address _sender) internal {
+        liqudityProviders[_sender].push(S_liquidity(_value, block.timestamp));
+    }
+
+    function get_Investor(
+        address _sender
+    ) public view returns (S_liquidity[] memory) {
+        return liqudityProviders[_sender];
+    }
+
+    receive() external payable {
+        handleInvestInvestor(msg.value, msg.sender);
+    }
+
+    fallback() external payable {
+        handleInvestInvestor(msg.value, msg.sender);
     }
 }
