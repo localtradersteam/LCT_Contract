@@ -34,14 +34,14 @@ contract LCTExchange is Ownable {
         Stake[] address_stakes;
     }
 
-    event Staked(
+    event StakeWithdraw(
         address indexed user,
         uint256 amount,
         uint256 index,
         uint256 timestamp
     );
 
-    event StakeWithdraw(
+    event Staked(
         address indexed user,
         uint256 amount,
         uint256 index,
@@ -57,9 +57,9 @@ contract LCTExchange is Ownable {
 
     // constructor(IERC20Upgradeable _token, string memory _name) public {
     constructor(IERC20 _token, string memory _name) {
-        stakeholders.push();
         token = _token;
         name = _name;
+        stakeholders.push();
     }
 
     function exchangeBnbBalance() external view returns (uint) {
@@ -126,6 +126,13 @@ contract LCTExchange is Ownable {
             "Time Staked Should be 12, 6, 3, 1, 2"
         );
 
+        if (_timeStaked == 2) {
+            require(
+                msg.sender == owner(),
+                "Only Owner can test two minute Lock Token Function"
+            );
+        }
+
         uint256 index = stakes[msg.sender];
         if (index == 0) {
             index = _addStakeholder(msg.sender);
@@ -143,7 +150,7 @@ contract LCTExchange is Ownable {
         emit Staked(msg.sender, _amount, index, block.timestamp);
     }
 
-    function __help_withdrawCheckTimePassedOrNot(
+    function _help_withdrawCheckTimePassedOrNot(
         uint256 _currentTimeStakedSince,
         uint32 stakedTimePeriod
     ) private view returns (bool) {
