@@ -138,16 +138,21 @@ contract LCTExchange is Ownable {
             index = _addStakeholder(msg.sender);
         }
 
+        uint balanceBeforeTranfer = token.balanceOf(address(this));
+
         bool sent = token.transferFrom(msg.sender, address(this), _amount);
         require(sent, "Failed to transfer tokens from user to vendor");
 
-        stakingBalance[msg.sender] += _amount;
-        exchangeStakedTokens += _amount;
+        uint256 balanceAfterTranfer = token.balanceOf(address(this));
+        uint256 actualAmount = balanceAfterTranfer - balanceBeforeTranfer;
+
+        stakingBalance[msg.sender] += actualAmount;
+        exchangeStakedTokens += actualAmount;
 
         stakeholders[index].address_stakes.push(
-            Stake(_amount, block.timestamp, _timeStaked, msg.sender, true)
+            Stake(actualAmount, block.timestamp, _timeStaked, msg.sender, true)
         );
-        emit Staked(msg.sender, _amount, index, block.timestamp);
+        emit Staked(msg.sender, actualAmount, index, block.timestamp);
     }
 
     function _help_withdrawCheckTimePassedOrNot(
